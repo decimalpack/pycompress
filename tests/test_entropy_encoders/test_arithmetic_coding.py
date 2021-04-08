@@ -1,11 +1,8 @@
-from typing import Any, List, Sequence
+from typing import Sequence
 
 import hypothesis.strategies as st
-import pytest
 from entropy_encoders import arithmetic_coding
 from hypothesis import given
-from hypothesis.strategies._internal import strategies
-from hypothesis.strategies._internal.core import composite
 
 EOF = "$"
 text_strategy = st.text(st.characters(blacklist_characters=EOF),
@@ -21,7 +18,7 @@ def test_list_of_strings(lists: str):
     assert lists == dec
 
 
-@composite
+@st.composite
 def hashables(draw):
     strats = [
         text_strategy,
