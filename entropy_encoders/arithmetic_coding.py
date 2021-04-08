@@ -87,7 +87,7 @@ def __create_probability_table(input_data):
     }
 
 
-def encode(input_data: Sequence[Hashable],
+def encode(input_data: List[Hashable],
            end_of_sequence: str,
            precision: int = 100,
            probability_table: Dict = None) -> ArithmeticEncodingReturn:
@@ -102,8 +102,8 @@ def encode(input_data: Sequence[Hashable],
 
     Parameters
     ----------
-    input_data : Sequence[Hashable]
-        Can be a str, list or any sequence
+    input_data : List[Hashable]
+        List of symbols
     end_of_sequence : str
         A special character that only occurs at end_of_sequences.
         Both probability_table (if given) and input_data must have this table
