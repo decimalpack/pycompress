@@ -1,8 +1,8 @@
 import bisect
 import decimal
 from collections import namedtuple
-from decimal import Decimal, getcontext
-from typing import Counter, Dict, Hashable, List, Sequence, Tuple
+from decimal import Decimal
+from typing import Counter, Dict, Hashable, List, Tuple
 
 ArithmeticEncodingReturn = namedtuple(
     "ArithmeticEncodingReturn", "decimal probability_table end_of_sequence")
@@ -76,8 +76,8 @@ def __minimize_entropy(lower: Decimal, upper: Decimal) -> Decimal:
         jump /= Decimal(10)
 
 
-def __create_probability_table(input_data):
-    frequency_table = Counter(input_data)
+def __create_probability_table(symbol_list):
+    frequency_table = Counter(symbol_list)
     N = sum(frequency_table.values())
     assert N != 0
 
@@ -87,7 +87,7 @@ def __create_probability_table(input_data):
     }
 
 
-def encode(input_data: List[Hashable],
+def encode(symbol_list: List[Hashable],
            end_of_sequence: str,
            precision: int = 100,
            probability_table: Dict = None) -> ArithmeticEncodingReturn:
@@ -102,7 +102,7 @@ def encode(input_data: List[Hashable],
 
     Parameters
     ----------
-    input_data : List[Hashable]
+    symbol_list : List[Hashable]
         List of symbols
     end_of_sequence : str
         A special character that only occurs at end_of_sequences.
@@ -131,11 +131,11 @@ def encode(input_data: List[Hashable],
         probability_table = Same as input, with floats casted to Decimal
         end_of_sequence = Same as input
     """
-    assert end_of_sequence in input_data
+    assert end_of_sequence in symbol_list
     decimal.getcontext().prec = precision
 
     if probability_table is None:
-        probability_table = __create_probability_table(input_data)
+        probability_table = __create_probability_table(symbol_list)
     else:
         # Since the user has given probability_table, it might not contain end_of_sequence character
         assert end_of_sequence in probability_table
@@ -148,7 +148,7 @@ def encode(input_data: List[Hashable],
                Decimal("1")) < Decimal("1e-5")
 
     range_table = __init_range_table(probability_table)
-    for symbol in input_data:
+    for symbol in symbol_list:
         lower, upper = __update_range_table(range_table, probability_table,
                                             symbol)
     return ArithmeticEncodingReturn(

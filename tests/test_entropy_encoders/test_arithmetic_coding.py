@@ -1,21 +1,20 @@
-from typing import Sequence
+from typing import List, Sequence
 
 import hypothesis.strategies as st
 from entropy_encoders import arithmetic_coding
 from hypothesis import given
 
-EOF = "$"
+EOF = "\n"
 text_strategy = st.text(st.characters(blacklist_characters=EOF),
                         max_size=10**9)
 
 
 @given(st.lists(text_strategy))
-def test_list_of_strings(lists: str):
-    lists += EOF
-    print(lists)
-    enc = arithmetic_coding.encode(lists, EOF)
+def test_list_of_strings(symbol_list: List):
+    symbol_list += EOF
+    enc = arithmetic_coding.encode(symbol_list, EOF)
     dec = arithmetic_coding.decode(enc)
-    assert lists == dec
+    assert symbol_list == dec
 
 
 @st.composite
@@ -34,11 +33,11 @@ def hashables(draw):
 
 
 @given(hashables())
-def test_list_of_hashables(lists: str):
-    lists += EOF
-    enc = arithmetic_coding.encode(lists, EOF)
+def test_list_of_hashables(symbol_list: List):
+    symbol_list += EOF
+    enc = arithmetic_coding.encode(symbol_list, EOF)
     dec = arithmetic_coding.decode(enc)
-    assert lists == dec
+    assert symbol_list == dec
 
 
 @given(st.from_type(Sequence))
