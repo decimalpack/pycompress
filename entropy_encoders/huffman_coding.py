@@ -135,7 +135,8 @@ def decode(encoded: HuffmanCodeReturn) -> List[str]:
     prefix = ""
     for bit in encoded.bit_string:
         prefix += bit
-        if (symbol := lookup_table.get(prefix)) is not None:
+        symbol = lookup_table.get(prefix)
+        if  symbol is not None:
             output.append(symbol)
             prefix = ""
     return output
