@@ -2,13 +2,13 @@ import bisect
 import decimal
 from collections import namedtuple
 from decimal import Decimal
-from typing import Counter, Dict, Hashable, List, Tuple
+from typing import Counter, Dict, List, Tuple
 
 ArithmeticEncodingReturn = namedtuple(
     "ArithmeticEncodingReturn", "decimal probability_table end_of_sequence")
 
 
-def __init_range_table(probability_table):
+def __init_range_table(probability_table:Dict[str,Decimal]):
     range_table = {}
     prev = Decimal(0)
     for symbol, probability in probability_table.items():
@@ -17,15 +17,15 @@ def __init_range_table(probability_table):
     return range_table
 
 
-def __update_range_table(range_table: Dict[Hashable, List[Decimal]],
-                         probability_table: Dict[Hashable, Decimal],
-                         symbol: Hashable) -> Tuple[Decimal, Decimal]:
+def __update_range_table(range_table: Dict[str, List[Decimal]],
+                         probability_table: Dict[str, Decimal],
+                         symbol: str) -> Tuple[Decimal, Decimal]:
     """
     Update the range_table (in place) to width of symbol
 
     Parameters
     ----------
-    range_table : Dict[Hashable, List[Decimal]]
+    range_table : Dict[str, List[Decimal]]
         A Dictionary mapping symbols to ranges:
 
         Example:
@@ -34,9 +34,9 @@ def __update_range_table(range_table: Dict[Hashable, List[Decimal]],
             "B":[Decimal(0.5), Decimal(0.7)],
         }
 
-    probability_table : Dict[Hashable, Decimal]
+    probability_table : Dict[str, Decimal]
 
-    symbol : Hashable
+    symbol : str
 
     Returns
     -------
@@ -87,10 +87,12 @@ def __create_probability_table(symbol_list):
     }
 
 
-def encode(symbol_list: List[Hashable],
-           end_of_sequence: str,
-           precision: int = 100,
-           probability_table: Dict = None) -> ArithmeticEncodingReturn:
+def encode(
+        symbol_list: List[str],
+        end_of_sequence: str,
+        precision: int = 100,
+        probability_table: Dict[str,
+                                float] = None) -> ArithmeticEncodingReturn:
     """
     Uses the Arithmetic Coding algorithm
     
@@ -102,7 +104,7 @@ def encode(symbol_list: List[Hashable],
 
     Parameters
     ----------
-    symbol_list : List[Hashable]
+    symbol_list : List[str]
         List of symbols
     end_of_sequence : str
         A special character that only occurs at end_of_sequences.
@@ -135,29 +137,29 @@ def encode(symbol_list: List[Hashable],
     decimal.getcontext().prec = precision
 
     if probability_table is None:
-        probability_table = __create_probability_table(symbol_list)
+        decimal_probability_table = __create_probability_table(symbol_list)
     else:
         # Since the user has given probability_table, it might not contain end_of_sequence character
         assert end_of_sequence in probability_table
-        probability_table = {
+        decimal_probability_table = {
             k: Decimal(str(v))
             for k, v in probability_table.items()
         }
     # Check if sum of probabilities is 1
-    assert abs(sum(probability_table.values()) -
+    assert abs(sum(decimal_probability_table.values()) -
                Decimal("1")) < Decimal("1e-5")
 
-    range_table = __init_range_table(probability_table)
+    range_table = __init_range_table(decimal_probability_table)
     for symbol in symbol_list:
-        lower, upper = __update_range_table(range_table, probability_table,
-                                            symbol)
+        lower, upper = __update_range_table(range_table,
+                                            decimal_probability_table, symbol)
     return ArithmeticEncodingReturn(
-        str(__minimize_entropy(lower, upper))[2:], probability_table,
+        str(__minimize_entropy(lower, upper))[2:], decimal_probability_table,
         end_of_sequence)
 
 
 def decode(encoded: ArithmeticEncodingReturn,
-           precision: int = 100) -> List[Hashable]:
+           precision: int = 100) -> List[str]:
     """
     Decode an Arithmetic Encoded sequence and return a list of symbols
     # Warning:
@@ -174,7 +176,7 @@ def decode(encoded: ArithmeticEncodingReturn,
 
     Returns
     -------
-    List[Hashable]
+    List[str]
         List containing symbols (including end_of_sequence) from encoded.probability_table
     """
     decimal.getcontext().prec = precision

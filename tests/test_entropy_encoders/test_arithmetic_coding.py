@@ -17,37 +17,6 @@ def test_list_of_strings(symbol_list: List):
     assert symbol_list == dec
 
 
-@st.composite
-def hashables(draw):
-    strats = [
-        text_strategy,
-        st.integers(),
-        st.floats(),
-        st.tuples(),
-        st.complex_numbers(),
-        st.none(),
-        st.booleans(),
-        st.decimals(allow_nan=False, allow_infinity=False)
-    ]
-    return list(map(draw, strats))
-
-
-@given(hashables())
-def test_list_of_hashables(symbol_list: List):
-    symbol_list += EOF
-    enc = arithmetic_coding.encode(symbol_list, EOF)
-    dec = arithmetic_coding.decode(enc)
-    assert symbol_list == dec
-
-
-@given(st.from_type(Sequence))
-def test_sequence(seq):
-    seq += EOF
-    enc = arithmetic_coding.encode(seq, EOF)
-    dec = arithmetic_coding.decode(enc)
-    assert seq == dec
-
-
 def test_handwritten():
     pt = {
         "R": 0.4,
